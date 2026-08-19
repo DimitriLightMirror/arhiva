@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>arhivadoc.eu - Digitalizare documente notariale</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <h1>arhivadoc.eu</h1>
+    <p class="subtitle">Platforma OCR pentru arhive notariale</p>
+  </header>
+
+  <main>
+    <!-- Upload section -->
+    <section id="upload-section" class="card">
+      <h2>Incarcare document</h2>
+      <div id="dropzone" tabindex="0">
+        <p>Trageti un scan aici sau</p>
+        <button id="pick-btn" type="button">Alegeti fisierul</button>
+        <p class="hint">Formate acceptate: PDF, TIFF, PNG, JPEG</p>
+      </div>
+      <input id="file-input" type="file" accept=".pdf,.tif,.tiff,.png,.jpg,.jpeg" hidden>
+      <div id="progress-wrap" hidden>
+        <p id="progress-text">Se proceseaza...</p>
+        <div class="progress-bar"><div id="progress-fill"></div></div>
+      </div>
+      <p id="error-msg" class="error" hidden></p>
+    </section>
+
+    <!-- Result section -->
+    <section id="result-section" hidden>
+      <div class="card" id="class-card">
+        <h2>Clasificare document</h2>
+        <div class="badge-row">
+          <span id="class-badge" class="badge">-</span>
+          <span id="conf-badge" class="badge badge-conf">-</span>
+        </div>
+        <h3>Campuri extrase</h3>
+        <table id="fields-table">
+          <tbody></tbody>
+        </table>
+        <h3>Etichete (balize)</h3>
+        <div id="tags-view" class="tags"></div>
+        <details id="tagged-text-wrap">
+          <summary>Text cu balize XML</summary>
+          <pre id="tagged-text"></pre>
+        </details>
+        <div class="downloads">
+          <a id="dl-pdf" class="btn" href="#" download>Descarca PDF cautabil</a>
+          <a id="dl-json" class="btn" href="#" download>Descarca JSON</a>
+          <button id="new-doc-btn" class="btn btn-secondary" type="button">Document nou</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Pagini</h2>
+        <div id="overlay-controls">
+          <span>Afisare regiuni:</span>
+          <label><input type="checkbox" class="region-toggle" data-type="TEXT" checked> Text</label>
+          <label><input type="checkbox" class="region-toggle" data-type="TABLE" checked> Tabel</label>
+          <label><input type="checkbox" class="region-toggle" data-type="IMAGE" checked> Imagine</label>
+          <label><input type="checkbox" class="region-toggle" data-type="PLAN" checked> Plan</label>
+        </div>
+        <div id="pages"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>arhivadoc.eu - procesare locala, fara transmitere de date in afara serverului</p>
+  </footer>
+
+  <script src="/app.js"></script>
+</body>
+</html>
