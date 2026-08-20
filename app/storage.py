@@ -77,6 +77,41 @@ def build_searchable_pdf_ocrmypdf(
             return None
 
 
+def _unicode_font_name() -> str | None:
+    """Register and return a ReportLab font name that supports Romanian diacritics.
+
+    Searches common system TrueType font paths (DejaVu, Noto, Liberation,
+    FreeSans, Arial, Segoe UI).  Returns ``None`` if no suitable font is found.
+    """
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont
+
+    candidates = [
+        # Linux
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+        "/usr/share/fonts/truetype/freefont/FreeSans.ttf",
+        # Windows
+        "C:/Windows/Fonts/arial.ttf",
+        "C:/Windows/Fonts/segoeui.ttf",
+        "C:/Windows/Fonts/tahoma.ttf",
+        # macOS
+        "/Library/Fonts/Arial.ttf",
+        "/System/Library/Fonts/Supplemental/Arial.ttf",
+        "/Library/Fonts/DejaVuSans.ttf",
+    ]
+    for path in candidates:
+        p = Path(path)
+        if p.exists():
+            try:
+                pdfmetrics.registerFont(TTFont("UnicodeFont", str(p)))
+                return "UnicodeFont"
+            except Exception:
+                continue
+    return None
+
+
 def build_searchable_pdf_fallback(
     page_images: list, ocr_pages: list[OcrPageResult]
 ) -> bytes:
@@ -88,6 +123,8 @@ def build_searchable_pdf_fallback(
     from reportlab.lib.colors import black
     from reportlab.lib.utils import ImageReader
     from reportlab.pdfgen import canvas
+
+    font_name = _unicode_font_name() or "Helvetica"
 
     buf = io.BytesIO()
     c = canvas.Canvas(buf)
@@ -111,12 +148,12 @@ def build_searchable_pdf_fallback(
             font_size = max(word.h * 0.85, 4)
             t = c.beginText(word.x, h - word.y - word.h * 0.85)
             t.setTextRenderMode(3)
-            t.setFont("Helvetica", font_size)
+            t.setFont(font_name, font_size)
             t.setFillColor(black)
             try:
                 t.textOut(word.text)
             except Exception:
-                continue  # skip glyphs not encodable in Helvetica
+                continue  # skip glyphs not encodable in the chosen font
             c.drawText(t)
         c.showPage()
 

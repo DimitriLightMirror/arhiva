@@ -67,12 +67,14 @@ async def scan(file: UploadFile = File(...)) -> dict:
 
 @app.get("/api/jobs")
 def list_jobs() -> dict:
+    # Purge stale finished jobs and their preview directories before listing.
+    registry.cleanup(settings.data_dir, settings.job_retention_hours)
     jobs = [
         {
             "id": j.id, "filename": j.filename, "status": j.status,
             "stage": j.stage, "created_at": j.created_at,
         }
-        for j in registry._jobs.values()  # small internal store; fine for a test page
+        for j in registry.snapshot()
     ]
     jobs.sort(key=lambda j: j["created_at"], reverse=True)
     return {"jobs": jobs}

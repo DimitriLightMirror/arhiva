@@ -75,6 +75,40 @@ class JobRegistry:
             for key, value in fields.items():
                 setattr(job, key, value)
 
+    def snapshot(self) -> list[Job]:
+        """Return a shallow copy of all jobs under the registry lock."""
+        with self._lock:
+            return list(self._jobs.values())
+
+    def cleanup(self, data_dir: str, max_age_hours: float) -> int:
+        """Remove finished jobs older than *max_age_hours* and delete their
+        preview directories.  Returns the number of jobs purged."""
+        cutoff = time.time() - max_age_hours * 3600
+        removed = 0
+        with self._lock:
+            old_ids = [
+                jid
+                for jid, job in self._jobs.items()
+                if job.created_at < cutoff and job.status in ("done", "error")
+            ]
+            for jid in old_ids:
+                job = self._jobs.pop(jid)
+                for preview in job.page_previews:
+                    try:
+                        Path(preview).unlink(missing_ok=True)
+                    except Exception:
+                        pass
+                job_dir = Path(data_dir) / jid
+                if job_dir.exists():
+                    try:
+                        for f in job_dir.iterdir():
+                            f.unlink(missing_ok=True)
+                        job_dir.rmdir()
+                    except Exception:
+                        pass
+                removed += 1
+        return removed
+
 
 class DocumentPipeline:
     """Orchestrates all processing stages for one document."""

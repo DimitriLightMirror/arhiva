@@ -33,6 +33,7 @@ class Settings(BaseSettings):
     archive_root: str = "./archive"        # final archive tree root
     watch_folder: str = "./watch"          # scanner output folder to watch
     data_dir: str = "./data"               # jobs / temp working directory
+    job_retention_hours: float = 24.0      # TTL for in-memory jobs and preview dirs
 
     # --- Server ---
     host: str = "0.0.0.0"
